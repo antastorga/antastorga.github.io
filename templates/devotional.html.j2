@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+</head>
+{% macro show_devotional_content(devotional) %}
+<h1 style="color: #2279cb; font-family: 'PT Serif',serif; font-weight: lighter;">
+    <p>{{devotional.day}} {{devotional.date}}</p>
+    <p>{{devotional.title}}</p>
+</h1>
+
+
+<p style="font-style: italic; font-weight: lighter; font-family: 'PT Serif',serif !important;">{{devotional.passage}}</p>
+<br>
+<p style="font-family: 'PT Serif',serif !important; line-height:5px;"><strong>La escritura de hoy:</strong></p>
+<a href="{{devotional.verse_link}}" style="background-color: rgb(19, 85, 151);color: rgb(255,255,255);text-decoration: none;border-style: solid;border-color: rgb(19, 85, 151); line-height:5px;">{{devotional.verse_text}}</a>
+
+{%- for paragraph in devotional.content %}
+<p style="font-family: 'PT Serif',serif !important; line-height: 30px;">{{paragraph}}</p>
+{%- endfor %}
+
+
+<p>De: <a href="{{devotional.author_link}}" style="color: rgb(26, 86, 151);">{{devotional.author_text}}</a></p>
+
+<h2 style="font-family: 'PT Serif',serif !important;">{{devotional.reflection_heading}}</h2>
+<p style="font-weight: bold; font-family: 'PT Serif',serif !important;">{{devotional.reflection_question}}</p>
+<p style="font-style: italic; font-family: 'PT Serif',serif !important;">{{devotional.reflection_prayer}}</p>
+{%- endmacro %}
+{%- set loop_index = namespace(index = 1, last=devotionals|length) %}
+{%- for devotional in devotionals %}
+{{ show_devotional_content(devotional) }}
+    {%- if loop_index.last != loop_index.index %}
+<div style = "display:block; clear:both; page-break-after:always;"></div>
+    {%- endif %}
+{%- set loop_index.index = loop_index.index + 1 %}
+{%- endfor %}
+</html>
