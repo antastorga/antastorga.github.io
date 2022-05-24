@@ -1,30 +1,89 @@
 import datetime
-import json
+import sys
+from argparse import ArgumentParser
+from typing import Dict, List, Tuple
 
-import pdfkit
 from jinja2 import Environment, FileSystemLoader
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from weasyprint import HTML
 from webdriver_manager.chrome import ChromeDriverManager
 
+main_parser = ArgumentParser()
+subparsers = main_parser.add_subparsers(dest="subcommand")
 
-def get_today_and_str():
+template_loader = FileSystemLoader(searchpath="./templates")
+env = Environment(loader=template_loader)
+template = env.get_template("devotional.html.j2")
+
+
+def argument(*name_or_flags, **kwargs):
+    """Convenience function to properly format arguments to pass to the
+    subcommand decorator.
+    """
+    return (list(name_or_flags), kwargs)
+
+
+def subcommand(args=[], parent=subparsers):
+    """Decorator to define a new subcommand in a sanity-preserving way.
+    The function will be stored in the ``func`` variable when the parser
+    parses arguments so that it can be called directly like so::
+        args = cli.parse_args()
+        args.func(args)
+    Usage example::
+        @subcommand([argument("-d", help="Enable debug mode", action="store_true")])
+        def subcommand(args):
+            print(args)
+    Then on the command line::
+        $ python cli.py subcommand -d
+    """
+
+    def decorator(func):
+        parser = parent.add_parser(func.__name__, description=func.__doc__)
+        for arg in args:
+            parser.add_argument(*arg[0], **arg[1])
+        parser.set_defaults(func=func)
+
+    return decorator
+
+
+def get_month_str(p_date: datetime.date) -> str:
+    months : List[str] = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"]
+    month : int = p_date.month - 1
+    return months[month]
+
+
+def get_weekday_str(p_date: datetime.date) -> str:
+    weekdays : List[str] = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    weekday : int = p_date.weekday()
+    return weekdays[weekday]
+
+
+def get_current_and_str(p_current_str: str) -> Tuple[datetime.date, str]:
+    current : datetime.date = datetime.date.fromisoformat(p_current_str)
+    current_str : str = current.strftime("%Y/%m/%d")
+    return (current, current_str)
+
+
+def get_today_and_str() -> Tuple[datetime.date, str]:
     today = datetime.date.today()
     today_str = today.strftime("%Y/%m/%d")
     return (today, today_str)
 
-def get_next_day_and_str(today):
+
+def get_next_day_and_str(today) -> Tuple[datetime.date, str]:
     next_day = today + datetime.timedelta(days=1)
     next_day_str = next_day.strftime("%Y/%m/%d")
     return (next_day, next_day_str)
 
-def scrap_webpage(url, day):
+
+def scrap_webpage(url, day) -> Dict:
     browser = webdriver.Chrome(ChromeDriverManager().install())
     browser.get(url)
 
-    devotional_dict = {}
+    devotional_dict : Dict = {}
 
     try:
         wait = WebDriverWait(browser, 15)
@@ -68,27 +127,137 @@ def scrap_webpage(url, day):
     return devotional_dict
 
 
-if __name__ == "__main__":
-    template_loader = FileSystemLoader(searchpath="./templates")
-    env = Environment(loader=template_loader)
-    template = env.get_template("devotional.html.j2")
+def get_url(day_str: str) -> str:
+    return 'https://nuestropandiario.org/CR/{day_str}'.format(day_str=day_str)
 
-    # Get day
-    days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-    (today, today_str) = get_today_and_str()
-    next_day = today
-    (next_day, nextday_str) = get_next_day_and_str(next_day)
+
+def get_current_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
     devotionals = []
-    for day in days:
+    (current, current_str) = get_current_and_str(p_current_str)
+    day = get_weekday_str(current)
+    month = get_month_str(current)
+    url = get_url(current_str)
+    devotional_dict = scrap_webpage(url, day)
+    devotionals.append(devotional_dict)
+    filename = "Devoción del {day} {n} de {month}".format(day=day, n=current.day,  month=month)
+    return devotionals, filename
+
+
+def get_today_devotionals() -> Tuple[List[Dict], str]:
+    devotionals = []
+    (today, today_str) = get_today_and_str()
+    day = get_weekday_str(today)
+    month = get_month_str(today)
+    url = get_url(today_str)
+    devotional_dict = scrap_webpage(url, day)
+    devotionals.append(devotional_dict)
+    filename = "Devoción del {day} {n} de {month}".format(day=day, n=today.day, month=month)
+    return devotionals, filename
+
+
+def get_next_week_sunday_from_current(p_current_str: str):
+    current : datetime.date = datetime.date.fromisoformat(p_current_str)
+    next_week_sunday = current + datetime.timedelta(days=(6 - current.weekday()))
+    next_week_sunday_str : str = next_week_sunday.strftime("%Y/%m/%d")
+    return (next_week_sunday, next_week_sunday_str)
+
+
+def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
+    days_to_start_capture : int = 0
+    days_to_end_capture : int = 6
+    devotionals : List[Dict] = []
+    first_day : str = ""
+    first_n : str = ""
+    last_day : str = ""
+    last_n : str = ""
+    (next_day, _) = get_next_week_sunday_from_current(p_current_str)
+    for i in range(days_to_start_capture, days_to_end_capture + 1):
         (next_day, nextday_str) = get_next_day_and_str(next_day)
-        url = 'https://nuestropandiario.org/CR/{nextday_str}'.format(nextday_str=nextday_str)
+        day = get_weekday_str(next_day)
+        first_day = day if i == days_to_start_capture else first_day
+        first_n = next_day.day if i == days_to_start_capture else first_n
+        last_day = day if i == days_to_end_capture else last_day
+        last_n = next_day.day if i == days_to_end_capture else last_n
+        month = get_month_str(next_day)
+        url = get_url(nextday_str)
         devotional_dict = scrap_webpage(url, day)
         devotionals.append(devotional_dict)
+    filename = "Devociones del {first_n} al {last_n} de {month}".format(first_n=first_n, last_n=last_n, month=month)
+    return devotionals, filename
 
-    with open("devotional-week.html", mode="w+") as file:
-        file.write(template.render({'devotionals': devotionals}))
 
-    pdfkit.from_file('devotional-week.html', 'devotional-week.pdf')
+@subcommand(
+    [
+        argument("-d", "--date", help="Current date", required=True)
+    ]
+)
+def current(args):
+    try:
+        (devotionals, filename) = get_current_devotionals(args.date)
+        with open("{filename}.html".format(filename=filename), mode="w+") as file:
+            file.write(template.render({'devotionals': devotionals}))
+        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+    except Exception as e:
+        raise e
+        # print(e, file=sys.stderr)
+        # sys.exit(1)
 
-# Issue with links. https://github.com/wkhtmltopdf/wkhtmltopdf/issues/4406#issuecomment-955987766
-# It is only available for Windows
+
+@subcommand(
+    [
+    ]
+)
+def today(args):
+    try:
+        (devotionals, filename) = get_today_devotionals()
+        with open("{filename}.html".format(filename=filename), mode="w+") as file:
+            file.write(template.render({'devotionals': devotionals}))
+        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+    except Exception as e:
+        raise e
+        # print(e, file=sys.stderr)
+        # sys.exit(1)
+
+
+@subcommand(
+    [
+        argument("-d", "--date", help="Current date", required=False)
+    ]
+)
+def next_week(args):
+    current_date_str = args.date
+    if not current_date_str:
+        (today, _) = get_today_and_str()
+        current_date_str = today.isoformat()
+    try:
+        (devotionals, filename) = get_next_week_devotionals(current_date_str)
+        with open("{filename}.html".format(filename=filename), mode="w+") as file:
+            file.write(template.render({'devotionals': devotionals}))
+        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+    except Exception as e:
+        raise e
+        # print(e, file=sys.stderr)
+        # sys.exit(1)
+
+
+@subcommand(
+    [
+        argument("-f", "--file", help="File without extension", required=True)
+    ]
+)
+def convert(args):
+    try:
+        filename = args.file.replace(".html", "")
+        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+    except Exception as e:
+        raise e
+        # print(e, file=sys.stderr)
+        # sys.exit(1)
+
+
+if __name__ == "__main__":
+    args = main_parser.parse_args()
+    if args.subcommand is None:
+        main_parser.print_help()
+    else:
+        args.func(args)
