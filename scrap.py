@@ -90,6 +90,9 @@ def scrap_webpage(url, day) -> Dict:
         element = wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, "container"))
         )
+        slow_element = wait.until(
+            EC.presence_of_element_located((By.CLASS_NAME, "devo-author"))
+        )
 
         date = element.find_element(By.CSS_SELECTOR, "html body div#root div.App main div div.content-wrap div div.container div.sticky-parent div.calendar-toggle").text
         devotional_dict["day"] = day
