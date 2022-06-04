@@ -11,6 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from weasyprint import HTML
 from webdriver_manager.chrome import ChromeDriverManager
 
+scrap_timeout_seconds = 60
 main_parser = ArgumentParser()
 subparsers = main_parser.add_subparsers(dest="subcommand")
 
@@ -86,12 +87,9 @@ def scrap_webpage(url, day) -> Dict:
     devotional_dict : Dict = {}
 
     try:
-        wait = WebDriverWait(browser, 15)
+        wait = WebDriverWait(browser, scrap_timeout_seconds)
         element = wait.until(
             EC.presence_of_element_located((By.CLASS_NAME, "container"))
-        )
-        slow_element = wait.until(
-            EC.presence_of_element_located((By.CLASS_NAME, "devo-author"))
         )
 
         date = element.find_element(By.CSS_SELECTOR, "html body div#root div.App main div div.content-wrap div div.container div.sticky-parent div.calendar-toggle").text
@@ -112,9 +110,16 @@ def scrap_webpage(url, day) -> Dict:
         for content in content_elements:
             devotional_dict.setdefault("content", []).append(content.text)
 
-        author = element.find_element(By.CLASS_NAME, "devo-author").find_element(By.TAG_NAME, "span").find_element(By.TAG_NAME, "a")
-        author_text = author.text
-        author_link = author.get_attribute("href")
+        author_text = ""
+        author_link = ""
+        try:
+            author = element.find_element(By.CLASS_NAME, "devo-author").find_element(By.TAG_NAME, "span").find_element(By.TAG_NAME, "a")
+            author_text = author.text
+            author_link = author.get_attribute("href")
+        except Exception as e:
+            author_text = ""
+            author_link = ""
+
         devotional_dict["author_text"] = author_text
         devotional_dict["author_link"] = author_link
 
