@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "==> Running today script"
+
+poetry run python scrap.py today
+
+exit 0

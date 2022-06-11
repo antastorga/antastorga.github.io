@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "==> Running current script"
+
+poetry run python scrap.py current -d "$1"
+
+exit 0

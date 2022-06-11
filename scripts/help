@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+echo 
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+echo 
+echo "==> Printing help script for: $1"
+
+poetry run python scrap.py $1 --help
+
+echo 
+
+exit 0
