@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 from argparse import ArgumentParser
 from typing import Dict, List, Tuple
@@ -18,7 +19,7 @@ subparsers = main_parser.add_subparsers(dest="subcommand")
 template_loader = FileSystemLoader(searchpath="./templates")
 env = Environment(loader=template_loader)
 template = env.get_template("devotional.html.j2")
-
+build_path = "./build"
 
 def argument(*name_or_flags, **kwargs):
     """Convenience function to properly format arguments to pass to the
@@ -194,17 +195,27 @@ def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
     return devotionals, filename
 
 
+def convert_file(filename):
+    full_filename = os.path.join(build_path, filename)
+    HTML('{filename}.html'.format(filename=full_filename)).write_pdf('{filename}.pdf'.format(filename=full_filename))
+
+
+def write_and_convert(build_path, filename, devotionals):
+    full_filename = os.path.join(build_path, filename)
+    with open("{filename}.html".format(filename=full_filename), mode="w+") as file:
+        file.write(template.render({'devotionals': devotionals}))
+    convert_file(filename=filename)
+
+
 @subcommand(
     [
-        argument("-d", "--date", help="Current date", required=True)
+        argument("-d", "--date", help="Current date. In ISO format YYYY-MM-DD", required=True)
     ]
 )
 def current(args):
     try:
         (devotionals, filename) = get_current_devotionals(args.date)
-        with open("{filename}.html".format(filename=filename), mode="w+") as file:
-            file.write(template.render({'devotionals': devotionals}))
-        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+        write_and_convert(build_path, filename, devotionals)
     except Exception as e:
         raise e
         # print(e, file=sys.stderr)
@@ -218,9 +229,7 @@ def current(args):
 def today(args):
     try:
         (devotionals, filename) = get_today_devotionals()
-        with open("{filename}.html".format(filename=filename), mode="w+") as file:
-            file.write(template.render({'devotionals': devotionals}))
-        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+        write_and_convert(build_path, filename, devotionals)
     except Exception as e:
         raise e
         # print(e, file=sys.stderr)
@@ -229,7 +238,7 @@ def today(args):
 
 @subcommand(
     [
-        argument("-d", "--date", help="Current date", required=False)
+        argument("-d", "--date", help="Current date. In ISO format YYYY-MM-DD", required=False)
     ]
 )
 def next_week(args):
@@ -239,9 +248,7 @@ def next_week(args):
         current_date_str = today.isoformat()
     try:
         (devotionals, filename) = get_next_week_devotionals(current_date_str)
-        with open("{filename}.html".format(filename=filename), mode="w+") as file:
-            file.write(template.render({'devotionals': devotionals}))
-        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+        write_and_convert(build_path, filename, devotionals)
     except Exception as e:
         raise e
         # print(e, file=sys.stderr)
@@ -256,7 +263,7 @@ def next_week(args):
 def convert(args):
     try:
         filename = args.file.replace(".html", "")
-        HTML('{filename}.html'.format(filename=filename)).write_pdf('{filename}.pdf'.format(filename=filename))
+        convert_file(filename=filename)
     except Exception as e:
         raise e
         # print(e, file=sys.stderr)
