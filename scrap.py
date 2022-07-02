@@ -9,7 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from weasyprint import HTML
+from weasyprint import HTML, CSS
 from webdriver_manager.chrome import ChromeDriverManager
 
 scrap_timeout_seconds = 60
@@ -197,7 +197,9 @@ def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
 
 def convert_file(filename):
     full_filename = os.path.join(build_path, filename)
-    HTML('{filename}.html'.format(filename=full_filename)).write_pdf('{filename}.pdf'.format(filename=full_filename))
+    html = HTML('{filename}.html'.format(filename=full_filename))
+    css = CSS(string='@page { size: A4; margin: 1cm }')
+    html.write_pdf('{filename}.pdf'.format(filename=full_filename), stylesheets=[css])
 
 
 def write_and_convert(build_path, filename, devotionals):
