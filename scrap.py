@@ -9,6 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.service import Service
 from weasyprint import HTML, CSS
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -20,6 +21,20 @@ template_loader = FileSystemLoader(searchpath="./templates")
 env = Environment(loader=template_loader)
 template = env.get_template("devotional.html.j2")
 build_path = "./build"
+
+
+def makedir_helper(new_path: str) -> bool:
+    if not os.path.isdir(new_path):
+        try:
+            os.makedirs(new_path)
+        except OSError as error:
+            print(
+                "Could not create dir %s\n%s", new_path, error
+            )
+            sys.exit(1)
+    else:
+        print("Skipping, already created dir %s", new_path)
+    return os.path.isdir(new_path)
 
 def argument(*name_or_flags, **kwargs):
     """Convenience function to properly format arguments to pass to the
@@ -84,7 +99,7 @@ def get_next_day_and_str(today) -> Tuple[datetime.date, str]:
 def scrap_webpage(url, day) -> Dict:
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    browser = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     browser.get(url)
 
     devotional_dict : Dict = {}
@@ -275,6 +290,8 @@ def convert(args):
 
 
 if __name__ == "__main__":
+    make
+
     args = main_parser.parse_args()
     if args.subcommand is None:
         main_parser.print_help()
