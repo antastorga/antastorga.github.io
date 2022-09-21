@@ -29,33 +29,12 @@ jobs:
           make today
       - name: commit docs
         run: |
+          cp -R build main
+          git add .
+          git stash save
           git checkout gh-pages
-          mkdir main
-          mv build main
-          echo "
-            <!doctype html>
-            <html>
-              <head>
-              <title>WebScrapper</title>
-              <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-              <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-              </head>
-
-              <body style="margin:0px 15px">
-                <h1>Web Scrapper</h1>
-
-                <hr />
-
-                <div class="row plugin-manual">
-                  <div class="col-md-4 center"><a href="main/" class="btn-doc btn"><i class="fa fa-newspaper-o"></i><p>main</p></a></div>
-                </div>
-
-              </body>
-            </html>" > index.html
-          ls -1
-          git status
-          git add main index.html
+          rm -rf build
+          git stash pop
+          git add .
           git commit -m "update docs for main" || true
-      - name: push docs
-        run: git push origin gh-pages
-
+          git push origin gh-pages
