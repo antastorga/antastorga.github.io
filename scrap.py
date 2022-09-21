@@ -82,7 +82,9 @@ def get_next_day_and_str(today) -> Tuple[datetime.date, str]:
 
 
 def scrap_webpage(url, day) -> Dict:
-    browser = webdriver.Chrome(ChromeDriverManager().install())
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    browser = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     browser.get(url)
 
     devotional_dict : Dict = {}
