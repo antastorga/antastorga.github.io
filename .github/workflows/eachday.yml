@@ -35,7 +35,7 @@ jobs:
           git checkout gh-pages
           rm -rf build
           git stash pop
-          cd build
+          cd main
 
           echo "<!doctype html> <html> <body>" > index.html
           for i in *; do
