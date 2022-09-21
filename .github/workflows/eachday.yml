@@ -1,0 +1,34 @@
+name: Each day
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * *'
+jobs:
+  each_day:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure Git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@bots.github.com"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Run make
+        run: |
+          make today
+      - name: list values
+        run: |
+          ls -1
+          ls -1 build/
+
