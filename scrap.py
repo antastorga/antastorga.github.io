@@ -290,8 +290,7 @@ def convert(args):
 
 
 if __name__ == "__main__":
-    make
-
+    makedir_helper(build_path)
     args = main_parser.parse_args()
     if args.subcommand is None:
         main_parser.print_help()
