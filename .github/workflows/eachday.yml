@@ -27,8 +27,33 @@ jobs:
       - name: Run make
         run: |
           make today
-      - name: list values
+      - name: commit docs
         run: |
-          ls -1
-          ls -1 build/
+          git checkout gh-pages
+          mkdir main
+          mv build main
+          echo "
+            <!doctype html>
+            <html>
+              <head>
+              <title>WebScrapper</title>
+              <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+              <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+              </head>
+
+              <body style="margin:0px 15px">
+                <h1>Web Scrapper</h1>
+
+                <hr />
+
+                <div class="row plugin-manual">
+                  <div class="col-md-4 center"><a href="main/" class="btn-doc btn"><i class="fa fa-newspaper-o"></i><p>main</p></a></div>
+                </div>
+
+              </body>
+            </html>" > index.html
+          git add main index.html
+          git commit -m "update docs for $(basename ${GITHUB_REF})" || true
+      - name: push docs
+        run: git push origin gh-pages
 
