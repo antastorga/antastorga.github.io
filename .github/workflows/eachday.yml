@@ -52,8 +52,10 @@ jobs:
 
               </body>
             </html>" > index.html
+          ls -1
+          git status
           git add main index.html
-          git commit -m "update docs for $(basename ${GITHUB_REF})" || true
+          git commit -m "update docs for main" || true
       - name: push docs
         run: git push origin gh-pages
 
