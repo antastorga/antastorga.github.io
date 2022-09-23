@@ -1,0 +1,53 @@
+name: Each day
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * *'
+jobs:
+  each_day:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure Git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@bots.github.com"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install brew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
+          brew install pango
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Run make
+        run: |
+          make today
+      - name: commit docs
+        run: |
+          cp -R build main
+          git add .
+          git stash save
+          git checkout gh-pages
+          rm -rf build
+          git stash pop
+          cd main
+
+          echo "<!doctype html> <html> <body>" > index.html
+          for i in *; do
+            echo '<a href="'"$i"'" class="btn-doc btn">'$i'</a><br>' >> index.html
+          done
+          echo "</body> </html>" >> index.html
+
+          cd -
+          git add .
+          git commit -m "update docs for main" || true
+          git push origin gh-pages

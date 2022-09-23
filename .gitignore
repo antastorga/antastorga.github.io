@@ -1,6 +1,5 @@
-# Generated files
-*.pdf
-*.html
+# Docs file
+index.html
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
