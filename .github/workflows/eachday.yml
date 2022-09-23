@@ -1,12 +1,10 @@
-name: Each day
+name: Each week
 on:
-  push:
-    branches: [ develop ]
-  pull_request:
+  workflow_dispatch:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 18 * * FRI'
 jobs:
-  each_day:
+  each_week:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
@@ -30,7 +28,7 @@ jobs:
           poetry install
       - name: Run make
         run: |
-          make today
+          make nextweek
       - name: commit docs
         run: |
           cp -R build main
