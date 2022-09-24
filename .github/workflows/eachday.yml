@@ -2,7 +2,7 @@ name: Each week
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 18 * * FRI'
+    - cron: '30 11 * * SAT'
 jobs:
   each_week:
     runs-on: macos-latest
