@@ -7,34 +7,50 @@
 {% macro show_devotional_content(devotional) %}
 <div style="margin: 1.5em 1.5em;">
 
-    <p style="color: #2279cb; font-size: 28px; font-family: Serif; font-weight: lighter; line-height: 1em; margin-bottom: 0.5em;">{{devotional.day}} {{devotional.date}}</p>
-    <h2 style="color: #2279cb; font-size: 30px; font-family: Serif; font-weight: lighter; margin-height: 0.1em; margin-top: 0.1em;">{{devotional.title}}</h2>
+    <p
+        style="color: #2279cb; font-size: 28px; font-family: Serif; font-weight: lighter; line-height: 1em; margin-bottom: 0.5em;">
+        {{devotional.day}} {{devotional.date}}</p>
+    <h2
+        style="color: #2279cb; font-size: 30px; font-family: Serif; font-weight: lighter; margin-height: 0.1em; margin-top: 0.1em;">
+        {{devotional.title}}</h2>
 
-    <p style="font-style: italic; font-weight: lighter; font-size: 24px; font-family: Serif !important; text-align: center; line-height: 1em; margin-bottom: -0.5em;">{{devotional.passage}}</p>
+    <p
+        style="font-style: italic; font-weight: lighter; font-size: 24px; font-family: Serif !important; text-align: center; line-height: 1em; margin-bottom: -0.85em;">
+        {{devotional.passage}}</p>
     <br>
-    <p style="font-family: Serif !important; line-height: 1em; font-size: 20px; margin-bottom: 0.5em;"><strong>La escritura de hoy:</strong></p>
-    <a href="{{devotional.verse_link}}" style="font-family: Serif !important; font-size: 20px; text-align: center; background-color: rgb(19, 85, 151); color: rgb(255,255,255); text-decoration: none; line-height: 1em; margin-bottom: -0.5em; padding: 3px;">{{devotional.verse_text}}</a>
+    <p style="font-family: Serif !important; line-height: 1em; font-size: 20px; margin-bottom: 0.5em;"><strong>La
+            escritura de hoy:</strong></p>
+    <a href="{{devotional.verse_link}}"
+        style="font-family: Serif !important; font-size: 20px; text-align: center; background-color: rgb(19, 85, 151); color: rgb(255,255,255); text-decoration: none; line-height: 1em; margin-bottom: -0.5em; padding: 3px;">{{devotional.verse_text}}</a>
 
     {%- for paragraph in devotional.content %}
-    <p style="font-family: Serif !important; font-size: 20px; line-height: 1.5em; text-align: justify; margin-bottom: -0.5em;">{{paragraph}}</p>
+    <p
+        style="font-family: Serif !important; font-size: 20px; line-height: 1.5em; text-align: justify; margin-bottom: -0.75em;">
+        {{paragraph}}</p>
     {%- endfor %}
 
     {%- if devotional.author_text and devotional.author_link %}
-    <p style="font-family: Serif !important; font-size: 20px;">De: <a href="{{devotional.author_link}}" style="color: rgb(26, 86, 151);">{{devotional.author_text}}</a></p>
+    <p style="font-family: Serif !important; font-size: 20px;">De: <a href="{{devotional.author_link}}"
+            style="color: rgb(26, 86, 151);">{{devotional.author_text}}</a></p>
     {%- else %}
     <p><span></span></p>
     {%- endif %}
-    <p style="font-family: Serif !important; font-size: 22px; margin-bottom: -0.5em;"><strong>{{devotional.reflection_heading}}</strong></p>
-    <p style="font-weight: bold; font-family: Serif !important; font-size: 20px; line-height: 1em;">{{devotional.reflection_question}}</p>
-    <p style="font-style: italic; font-family: Serif !important; font-size: 20px; line-height: 1em;">{{devotional.reflection_prayer}}</p>
+    <p style="font-family: Serif !important; font-size: 22px; margin-bottom: -0.75em;">
+        <strong>{{devotional.reflection_heading}}</strong>
+    </p>
+    <p style="font-weight: bold; font-family: Serif !important; font-size: 20px; line-height: 1.15em;">
+        {{devotional.reflection_question}}</p>
+    <p style="font-style: italic; font-family: Serif !important; font-size: 20px; line-height: 1.15em;">
+        {{devotional.reflection_prayer}}</p>
 </div>
 {%- endmacro %}
 {%- set loop_index = namespace(index = 1, last=devotionals|length) %}
 {%- for devotional in devotionals %}
 {{ show_devotional_content(devotional) }}
-    {%- if loop_index.last != loop_index.index %}
-<div style = "display:block; clear:both; page-break-after:always;"></div>
-    {%- endif %}
+{%- if loop_index.last != loop_index.index %}
+<div style="display:block; clear:both; page-break-after:always;"></div>
+{%- endif %}
 {%- set loop_index.index = loop_index.index + 1 %}
 {%- endfor %}
+
 </html>
