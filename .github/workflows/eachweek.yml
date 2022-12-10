@@ -20,7 +20,7 @@ jobs:
       - name: Install brew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
-          brew install pango
+          brew install pango=1.5.0
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - name: Install dependencies
