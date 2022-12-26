@@ -31,7 +31,9 @@ jobs:
           make nextweek
       - name: commit docs
         run: |
-          cp -R build main
+          DATE_STR=`date "+%Y-%m-%d"`
+          mkdir -p main/$DATE_STR
+          cp -R build main/$DATE_STR
           git add .
           git stash save
           git checkout gh-pages
@@ -40,11 +42,14 @@ jobs:
           cd main
 
           echo '<!doctype html><html><head><title>Web Scrappers Results</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><link rel=\"stylesheet\" media=\"all\" href=\"https://theforeman.org/static/css/bootstrap.min.css\" /><link rel=\"stylesheet\" media=\"all\" href=\"https://theforeman.org/static/css/bootstrap-responsive.min.css\" /><link rel=\"stylesheet\" media=\"all\" href=\"https://theforeman.org/static/css/style.css\" /><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css\"></head><body style=\"margin:15px 15px\"><div class=\"list-group\">' | tr -d '\'  > index.html
-          for i in D*.pdf; do
-            echo '<a href="'"$i"'" class="list-group-item list-group-item-danger">'$i'</a><br>' >> index.html
+          for i in **/D*.pdf; do
+            k=`echo $i| cut -c  12-`
+            echo '<a href="'"$i"'" class="list-group-item list-group-item-danger">'$k'</a><br>' >> index.html
           done
-          for i in D*.html; do
-            echo '<a href="'"$i"'" class="list-group-item list-group-item-warning">'$i'</a><br>' >> index.html
+          echo "<hr>" >> index.html
+          for i in **/D*.html; do
+            k=`echo $i| cut -c  12-`
+            echo '<a href="'"$i"'" class="list-group-item list-group-item-warning">'$k'</a><br>' >> index.html
           done
           echo "</div></body></html>" >> index.html
 
