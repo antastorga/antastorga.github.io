@@ -2,7 +2,7 @@
 
 DATE_STR=`date "+%Y-%m-%d"`
 mkdir -p main/$DATE_STR
-cp -R build main/$DATE_STR
+cp -R build/* main/$DATE_STR
 git add .
 git stash save
 git checkout gh-pages
