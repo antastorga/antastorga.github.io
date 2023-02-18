@@ -211,6 +211,7 @@ def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
             devotionals.append(devotional_dict)
         except Exception as e:
             print("Failed to get {day} at {url}".format(day=day, url=url), file=sys.stderr)
+            raise e
     filename = "Devociones del {first_n} al {last_n} de {month}".format(first_n=first_n, last_n=last_n, month=month)
     return devotionals, filename
 
