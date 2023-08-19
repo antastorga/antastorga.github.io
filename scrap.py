@@ -5,13 +5,16 @@ from argparse import ArgumentParser
 from typing import Dict, List, Tuple
 
 from jinja2 import Environment, FileSystemLoader
+
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.service import Service
+# from selenium.webdriver.chrome.service import Service
 from weasyprint import HTML, CSS
-from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
 
 scrap_timeout_seconds = 60
 main_parser = ArgumentParser()
@@ -99,7 +102,8 @@ def get_next_day_and_str(today) -> Tuple[datetime.date, str]:
 def scrap_webpage(url, day) -> Dict:
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    # browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     browser.get(url)
 
     devotional_dict : Dict = {}
