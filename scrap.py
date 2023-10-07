@@ -145,12 +145,29 @@ def scrap_webpage(url, day) -> Dict:
         devotional_dict["author_text"] = author_text
         devotional_dict["author_link"] = author_link
 
-        reflection_heading = element.find_element(By.CLASS_NAME, "devo-prayer-heading").text
+        reflection_heading = ""
+        try:
+            reflection_heading = element.find_element(By.CLASS_NAME, "devo-prayer-heading").text
+        except Exception as e:
+            reflection_heading = ""
+
         devotional_dict["reflection_heading"] = reflection_heading
-        reflection_question = element.find_element(By.CLASS_NAME, "devo-question").text
-        devotional_dict["reflection_question"] = reflection_question
-        reflection_prayer = element.find_element(By.CLASS_NAME, "devo-prayer").text
+
+        reflection_prayer = ""
+        try:
+            reflection_prayer = element.find_element(By.CLASS_NAME, "devo-prayer").text
+        except Exception as e:
+            reflection_prayer = ""
+
         devotional_dict["reflection_prayer"] = reflection_prayer
+
+        reflection_question = ""
+        try:
+            reflection_question = element.find_element(By.CLASS_NAME, "devo-question").text
+        except Exception as e:
+            reflection_question = ""
+
+        devotional_dict["reflection_question"] = reflection_question
 
     finally:
         browser.quit()
@@ -257,6 +274,62 @@ def today(args):
     try:
         (devotionals, filename) = get_today_devotionals()
         write_and_convert(build_path, filename, devotionals)
+    except Exception as e:
+        raise e
+        # print(e, file=sys.stderr)
+        # sys.exit(1)
+
+
+def get_next_month_start_n_end(p_current_str: str) -> Tuple[datetime.date, datetime.date]:
+    tomorrow, _ = get_current_and_str(p_current_str)
+    month_start = datetime.date(tomorrow.year, tomorrow.month, 1)
+    next_month = (tomorrow.month + 1)
+    next_month = 1 if next_month == 13 else next_month
+    carry_year = 1 if next_month == 13 else 0
+    month_end = datetime.date(tomorrow.year + carry_year, next_month, 1) - datetime.timedelta(days=1)
+    return (month_start, month_end)
+
+
+def get_month_devotionals(p_current_str: str) -> List[List[Dict]]:
+    devotionals_all = []
+    devotionals = []
+    (month_start, month_end) = get_next_month_start_n_end(p_current_str)
+    today = month_start
+    while today <= month_end:
+        day = get_weekday_str(today)
+        month = get_month_str(today)
+        url = get_url(today.strftime("%Y/%m/%d"))
+        devotional_dict = scrap_webpage(url, day)
+        devotional_dict['month'] = month
+        devotional_dict['dayn'] = today.day
+        devotionals.append(devotional_dict)
+        if day == "Domingo" or today == month_end:
+            devotionals_all.append(devotionals)
+            try:
+                d1 = devotionals[0]
+                d2 = devotionals[-1]
+                filename = "Devociones del {day1} al {day2} de {month}".format(day1=d1["dayn"], day2=d2["dayn"], month=d1["month"])
+                write_and_convert(build_path, filename, devotionals)
+            except Exception as e:
+                print("Error obtaining values from {day}")
+                print(e)
+            devotionals = []
+        today = today + datetime.timedelta(days=1)
+    return devotionals_all
+
+
+@subcommand(
+    [
+        argument("-d", "--date", help="Current date. In ISO format YYYY-MM-DD", required=False)
+    ]
+)
+def month(args):
+    current_date_str = args.date
+    if not current_date_str:
+        (today, _) = get_today_and_str()
+        current_date_str = today.isoformat()
+    try:
+        devotionals_all = get_month_devotionals(current_date_str)
     except Exception as e:
         raise e
         # print(e, file=sys.stderr)

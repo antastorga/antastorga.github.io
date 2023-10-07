@@ -1,0 +1,31 @@
+name: Each month
+on:
+  workflow_dispatch:
+jobs:
+  each_month:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure Git
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@bots.github.com"
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install brew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
+          brew install pango
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Run make
+        run: |
+          poetry run python scrap.py month
+      - name: commit docs
+        run: scripts/commit-docs
