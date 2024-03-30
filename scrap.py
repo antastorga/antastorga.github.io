@@ -175,7 +175,8 @@ def scrap_webpage(url, day) -> Dict:
 
 
 def get_url(day_str: str) -> str:
-    return 'https://nuestropandiario.org/CR/{day_str}'.format(day_str=day_str)
+    # return 'https://nuestropandiario.org/CR/{day_str}'.format(day_str=day_str)
+    return 'https://odb.org/{day_str}'.format(day_str=day_str)
 
 
 def get_current_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
