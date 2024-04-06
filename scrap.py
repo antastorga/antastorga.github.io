@@ -4,6 +4,8 @@ import sys
 from argparse import ArgumentParser
 from typing import Dict, List, Tuple
 
+import urllib.parse
+
 from jinja2 import Environment, FileSystemLoader
 
 from selenium import webdriver
@@ -123,7 +125,8 @@ def scrap_webpage(url, day) -> Dict:
         devotional_dict["passage"] = passage
         verse = element.find_element(By.CLASS_NAME, "skipRefTagger")
         verse_text = verse.text
-        verse_link = verse.get_attribute("href")
+        verse_text_quoted = urllib.parse.quote_plus(verse_text.replace(',', ';'))
+        verse_link = "https://www.biblegateway.com/passage/?search={verse_text_quoted}&version=RVR1960".format(verse_text_quoted=verse_text_quoted)
         devotional_dict["verse_text"] = verse_text
         devotional_dict["verse_link"] = verse_link
 
@@ -175,8 +178,8 @@ def scrap_webpage(url, day) -> Dict:
 
 
 def get_url(day_str: str) -> str:
-    # return 'https://nuestropandiario.org/CR/{day_str}'.format(day_str=day_str)
-    return 'https://odb.org/{day_str}'.format(day_str=day_str)
+    return 'https://nuestropandiario.org/{day_str}'.format(day_str=day_str)
+    # return 'https://odb.org/{day_str}'.format(day_str=day_str)
 
 
 def get_current_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
