@@ -20,18 +20,18 @@
     <br>
     <p style="font-family: Serif !important; line-height: 1em; font-size: 20px; margin-bottom: 0.5em;"><strong>La
             escritura de hoy: </strong><a href="{{devotional.verse_link}}"
-        style="font-family: Serif !important; font-size: 20px; text-align: center; color: rgb(19, 85, 151); text-decoration: none; line-height: 1em; margin-bottom: -0.5em; padding: 3px;">{{devotional.verse_text}}</a>
+        style="font-family: Serif !important; font-size: 20px; text-align: center; color: rgb(26, 86, 151); text-decoration: none; line-height: 1em; margin-bottom: -0.5em; padding: 3px;">{{devotional.verse_text}}</a>
     </p>
 
     {%- for paragraph in devotional.content %}
     <p
-        style="font-family: Serif !important; font-size: 20px; line-height: 1.5em; text-align: justify; margin-bottom: -0.75em;">
+        style="font-family: Serif !important; font-size: 20px; line-height: 1.5em; text-align: left; margin-bottom: -0.75em;">
         {{paragraph}}</p>
     {%- endfor %}
 
     {%- if devotional.author_text and devotional.author_link %}
     <p style="font-family: Serif !important; font-size: 20px;">De: <a href="{{devotional.author_link}}"
-            style="color: rgb(26, 86, 151);">{{devotional.author_text}}</a></p>
+            style="font-family: Serif !important; font-size: 20px; text-align: center; color: rgb(26, 86, 151); text-decoration: none;">{{devotional.author_text}}</a></p>
     {%- else %}
     <p><span></span></p>
     {%- endif %}
