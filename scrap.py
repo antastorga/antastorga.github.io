@@ -2,6 +2,8 @@ import datetime
 import os
 import re
 import sys
+import pdfkit
+import random
 from argparse import ArgumentParser
 from typing import Dict, List, Tuple
 
@@ -25,7 +27,7 @@ subparsers = main_parser.add_subparsers(dest="subcommand")
 
 template_loader = FileSystemLoader(searchpath="./templates")
 env = Environment(loader=template_loader)
-template = env.get_template("devotional.html.j2")
+template_pdfkit = env.get_template("devotional-pdfkit.html.j2")
 build_path = "./build"
 
 
@@ -102,19 +104,20 @@ def get_next_day_and_str(today) -> Tuple[datetime.date, str]:
     return (next_day, next_day_str)
 
 
-def add_references(text) -> str:
+def add_references(text, do_quote=True) -> str:
     new_text = text
     books_and_ref_groups = [['Génesis', 'Gn', 'Gén'], ['Nahúm', 'Nah', 'Na'], ['Éxodo', 'Ex'], ['Habacuc', 'Hab', 'Ha'], ['Levítico', 'Lv', 'Lev'], ['Sofonías', 'Sof', 'So'], ['Números', 'Nm', 'Núm'], ['Hageo', 'Ageo', 'Hag', 'Ag'], ['Deuteronomio', 'Dt'], ['Zacarías', 'Zac', 'Za'], ['Josué', 'Jos'], ['Malaquías', 'Mal', 'Ml'], ['Jueces', 'Jue', 'Jc'], ['Mateo', 'Mt', 'Mat'], ['Rut', 'Rt', 'Rut'], ['Marcos', 'Mc', 'Mr', 'Mar'], ['1 Samuel', '1 S', '1 Sam'], ['2 Samuel', '2 S', '2 Sam'], ['1 Reyes', '1 R', '1 Rey'], ['2 Reyes', '2 R', '2 Rey'], ['Lucas', 'Lc', 'Luc'], ['Juan', 'Jn', 'Juan'], ['Hechos', 'Hch', 'He', 'Hech'], ['Romanos', 'Rom', 'Ro', 'Rm'], ['1 Crónicas', '1 Cr', '1 Cro', '1 Cró', '1 Crón'], ['1 Corintios', '1 Co', '1 Cor'], ['2 Crónicas', '2 Cr', '2 Cro', '2 Cró', '2 Crón'], ['2 Corintios', '2 Co', '2 Cor'], ['Esdras', 'Esd'], ['Gálatas', 'Ga', 'Gál', 'Gá', 'Gl'], ['Nehemías', 'Neh', 'Ne'], ['Efesios', 'Ef'], ['Ester', 'Est'], ['Filipenses', 'Fil', 'Flp'], ['Job', 'Job', 'Jb'], ['Colosenses', 'Col'], ['Salmo', 'Salmos', 'Sal', 'Sl'], ['1 Tesalonicenses', '1 Tls', '1 Tes', '1 Te'], ['Proverbios', 'Pr', 'Prv', 'Pro'], ['2 Tesalonicenses', '2 Tls', '2 Tes', '2 Te'], ['Eclesiastés', 'Ec'], ['1 Timoteo', '1 Tim', '1 Ti', '1 Tm'], ['Cantares', 'Cnt', 'Ct', 'Cant'], ['2 Timoteo', '2 Tim', '2 Ti', '2 Tm'], ['Isaías', 'Is', 'Isa'], ['Tito', 'Tit', 'Ti', 'Tt'], ['Jeremías', 'Jer', 'Jr'], ['Filemón', 'Flm', 'Filem'], ['Lamentaciones', 'Lm', 'Lam'], ['Hebreos', 'Heb', 'He', 'Hb'], ['Ezequiel', 'Ez', 'Ezq'], ['Santiago', 'St', 'Sant', 'Stg', 'Stgo'], ['Daniel', 'Dn', 'Dan'], ['1 Pedro', '1 P', '1 Pe', '1 Ped'], ['Oseas', 'Os'], ['2 Pedro', '2 P', '2 Pe', '2 Ped'], ['Joel', 'Jl', 'Joel'], ['1 Juan', '1 Jn'], ['Amós', 'Am'], ['2 Juan', '2 Jn'], ['Abdías', 'Abd', 'Ab'], ['3 Juan', '3 Jn'], ['Jonás', 'Jon'], ['Judas', 'Jud', 'Jds'], ['Miqueas', 'Miq', 'Mi'], ['Apocalipsis', 'Ap', 'Apoc']]
     books = [book_group[0] for book_group in books_and_ref_groups]
-    pattern = re.compile(r'(\((\d )?[A-Za-záéíóúÁÉÍÓÚ]+( \d+)?(\:\d+)?(\-\d+)?([,;]((\d | )?[A-Za-záéíóúÁÉÍÓÚ]+)?( \d+)?(\:\d+)?(\-\d+)?)*)') # verse in reference is enclosed in parenthesis
-    link = "<a href=\"{verse_link}\" style=\"font-family: Serif !important; font-size: 20px; text-align: center; color: rgb(9, 50, 93); text-decoration: none;\"> {verse_text}</a>"
+    pattern = re.compile(r'(\((\d )?[A-Za-záéíóúÁÉÍÓÚ]+ [0-9:\-,;]+\))') # verse in reference is enclosed in parenthesis
+    font_size = "20px" if do_quote else "24px"
+    link = "<a href=\"{verse_link}\" style=\"font-family: Serif !important; font-size: {font_size}; text-align: center; color: rgb(9, 50, 93); text-decoration: none;\"> {verse_text}</a>"
     for match in pattern.finditer(text):
         reference = match.group(1)
         if any([book in reference for book in books]):
             verse_text = reference.replace('(', '').replace(')', '')
-            verse_text_quoted = urllib.parse.quote_plus(verse_text.replace(',', ';'))
+            verse_text_quoted = urllib.parse.quote_plus(verse_text.replace(',', ';')) if do_quote else verse_text
             verse_link = "https://www.biblegateway.com/passage/?search={verse_text_quoted}&version=RVR1960".format(verse_text_quoted=verse_text_quoted)
-            new_text = new_text.replace(verse_text, str(link).format(verse_link=verse_link, verse_text=verse_text))
+            new_text = new_text.replace(verse_text, str(link).format(verse_link=verse_link, verse_text=verse_text, font_size=font_size))
     return new_text
 
 def scrap_webpage(url, day) -> Dict:
@@ -143,14 +146,18 @@ def scrap_webpage(url, day) -> Dict:
         verse_text = verse.text
         verse_text_quoted = urllib.parse.quote_plus(verse_text.replace(',', ';'))
         verse_link = "https://www.biblegateway.com/passage/?search={verse_text_quoted}&version=RVR1960".format(verse_text_quoted=verse_text_quoted)
+        verse_link_unquoted = "https://www.biblegateway.com/passage/?search={verse_text_quoted}&version=RVR1960".format(verse_text_quoted=verse_text)
         devotional_dict["verse_text"] = verse_text
         devotional_dict["verse_link"] = verse_link
+        devotional_dict["verse_link_unquoted"] = verse_link_unquoted
 
         content = element.find_element(By.CLASS_NAME, "content")
         content_elements = content.find_element(By.TAG_NAME, "div").find_elements(By.TAG_NAME, "p")
         for content in content_elements:
-            content_text = add_references(content.text)
+            content_text = add_references(content.text, do_quote=True)
+            content_text_unquoted = add_references(content.text, do_quote=False)
             devotional_dict.setdefault("content", []).append(content_text)
+            devotional_dict.setdefault("content_unquoted", []).append(content_text_unquoted)
 
         author_text = ""
         author_link = ""
@@ -251,24 +258,40 @@ def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
         try:
             devotional_dict = scrap_webpage(url, day)
             devotionals.append(devotional_dict)
-        except Exception as e:
-            print("Failed to get {day} at {url}".format(day=day, url=url), file=sys.stderr)
-            raise e
+        except Exception as er:
+            try:
+                year = url.split("/")[-3]
+                past_year = int(year) - random.randint(3, 10)
+                url = url.replace(year, "{past_year}".format(past_year=past_year))
+                devotional_dict = scrap_webpage(url, day)
+                devotionals.append(devotional_dict)
+            except Exception as e:
+                print("Failed to get {day} at {url}".format(day=day, url=url), file=sys.stderr)
+                raise e
     filename = "Devociones del {first_n} al {last_n} de {month}".format(first_n=first_n, last_n=last_n, month=month)
     return devotionals, filename
 
 
 def convert_file(filename):
+    options = {
+        'page-size': 'Letter',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+    }
+    build_path = "./build"
     full_filename = os.path.join(build_path, filename)
-    html = HTML('{filename}.html'.format(filename=full_filename))
-    css = CSS(string='@page { size: A4; margin: 1cm }')
-    html.write_pdf('{filename}.pdf'.format(filename=full_filename), stylesheets=[css])
+    input_filename = '{filename}-pdfkit.html'.format(filename=full_filename)
+    output_filename = '{filename}-pdfkit.pdf'.format(filename=full_filename)
+    with open(input_filename) as f:
+        pdfkit.from_file(f, output_filename, options=options)
 
 
 def write_and_convert(build_path, filename, devotionals):
     full_filename = os.path.join(build_path, filename)
-    with open("{filename}.html".format(filename=full_filename), mode="w+") as file:
-        file.write(template.render({'devotionals': devotionals}))
+    with open("{filename}-pdfkit.html".format(filename=full_filename), mode="w+") as file:
+        file.write(template_pdfkit.render({'devotionals': devotionals}))
     convert_file(filename=filename)
 
 
@@ -319,8 +342,10 @@ def get_month_devotionals(p_current_str: str) -> List[List[Dict]]:
     while today <= month_end:
         day = get_weekday_str(today)
         month = get_month_str(today)
+
         url = get_url(today.strftime("%Y/%m/%d"))
         devotional_dict = scrap_webpage(url, day)
+
         devotional_dict['month'] = month
         devotional_dict['dayn'] = today.day
         devotionals.append(devotional_dict)
