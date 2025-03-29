@@ -344,11 +344,24 @@ def get_month_devotionals(p_current_str: str) -> List[List[Dict]]:
         month = get_month_str(today)
 
         url = get_url(today.strftime("%Y/%m/%d"))
-        devotional_dict = scrap_webpage(url, day)
+        try:
+            devotional_dict = scrap_webpage(url, day)
+            devotional_dict['month'] = month
+            devotional_dict['dayn'] = today.day
+            devotionals.append(devotional_dict)
+        except Exception as e:
+            try:
+                year = url.split("/")[-3]
+                past_year = int(year) - random.randint(3, 10)
+                print("Error obtaining values from year {past_year}")
+                url = url.replace(year, "{past_year}".format(past_year=past_year))
+                devotional_dict = scrap_webpage(url, day)
+                devotional_dict['month'] = month
+                devotional_dict['dayn'] = today.day
+                devotionals.append(devotional_dict)
+            except Exception as e:
+                raise e
 
-        devotional_dict['month'] = month
-        devotional_dict['dayn'] = today.day
-        devotionals.append(devotional_dict)
         if day == "Domingo" or today == month_end:
             devotionals_all.append(devotionals)
             try:
@@ -359,6 +372,7 @@ def get_month_devotionals(p_current_str: str) -> List[List[Dict]]:
             except Exception as e:
                 print("Error obtaining values from {day}")
                 print(e)
+                raise e
             devotionals = []
         today = today + datetime.timedelta(days=1)
     return devotionals_all
