@@ -32,6 +32,7 @@ jobs:
         run: |
           curl -OL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/wkhtmltox-0.12.6-2.macos-cocoa.pkg
           sudo installer -pkg wkhtmltox-0.12.6-2.macos-cocoa.pkg -target /
+          sudo rm -rf wkhtmltox-0.12.6-2.macos-cocoa.pkg
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - name: Install dependencies
