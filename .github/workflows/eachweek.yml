@@ -28,6 +28,9 @@ jobs:
       - name: Install pango
         run: |
           brew install pango
+      - name: Install wkhtmltopdf
+        run: |
+          brew install --cask wkhtmltopdf
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - name: Install dependencies

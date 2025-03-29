@@ -19,6 +19,9 @@ jobs:
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
           brew install pango
+      - name: Install wkhtmltopdf
+        run: |
+          brew install --cask wkhtmltopdf
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - name: Install dependencies
