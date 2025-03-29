@@ -27,7 +27,7 @@ subparsers = main_parser.add_subparsers(dest="subcommand")
 
 template_loader = FileSystemLoader(searchpath="./templates")
 env = Environment(loader=template_loader)
-template_pdfkit = env.get_template("devotional-pdfkit.html.j2")
+template_pdfkit = env.get_template("devotional.html.j2")
 build_path = "./build"
 
 
@@ -282,15 +282,15 @@ def convert_file(filename):
     }
     build_path = "./build"
     full_filename = os.path.join(build_path, filename)
-    input_filename = '{filename}-pdfkit.html'.format(filename=full_filename)
-    output_filename = '{filename}-pdfkit.pdf'.format(filename=full_filename)
+    input_filename = '{filename}.html'.format(filename=full_filename)
+    output_filename = '{filename}.pdf'.format(filename=full_filename)
     with open(input_filename) as f:
         pdfkit.from_file(f, output_filename, options=options)
 
 
 def write_and_convert(build_path, filename, devotionals):
     full_filename = os.path.join(build_path, filename)
-    with open("{filename}-pdfkit.html".format(filename=full_filename), mode="w+") as file:
+    with open("{filename}.html".format(filename=full_filename), mode="w+") as file:
         file.write(template_pdfkit.render({'devotionals': devotionals}))
     convert_file(filename=filename)
 
