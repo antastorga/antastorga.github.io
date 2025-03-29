@@ -30,7 +30,8 @@ jobs:
           brew install pango
       - name: Install wkhtmltopdf
         run: |
-          brew install --cask wkhtmltopdf
+          curl -OL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/wkhtmltox-0.12.6-2.macos-cocoa.pkg
+          sudo installer -pkg wkhtmltox-0.12.6-2.macos-cocoa.pkg -target /
       - name: Install Poetry
         uses: snok/install-poetry@v1
       - name: Install dependencies
