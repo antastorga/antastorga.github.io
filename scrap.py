@@ -110,7 +110,7 @@ def add_references(text, do_quote=True) -> str:
     books = [book_group[0] for book_group in books_and_ref_groups]
     pattern = re.compile(r'(\((\d )?[A-Za-záéíóúÁÉÍÓÚ]+ [0-9:\-,;]+\))') # verse in reference is enclosed in parenthesis
     font_size = "20px" if do_quote else "24px"
-    link = "<a href=\"{verse_link}\" style=\"font-family: Serif !important; font-size: {font_size}; text-align: center; color: rgb(9, 50, 93); text-decoration: none;\"> {verse_text}</a>"
+    link = "<a href=\"{verse_link}\" style=\"font-family: Serif !important; font-size: {font_size}; text-align: center; color: rgb(9, 50, 93); text-decoration: none;\">{verse_text}</a>"
     for match in pattern.finditer(text):
         reference = match.group(1)
         if any([book in reference for book in books]):
