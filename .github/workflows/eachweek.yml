@@ -13,34 +13,37 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@bots.github.com"
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+
       - name: Install brew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
+
       - name: unbreak python in github actions
         run: |
           find /usr/local/bin -lname '*/Library/Frameworks/Python.framework/*' -delete
           sudo rm -rf /Library/Frameworks/Python.framework/
           brew install --force python3 && brew unlink python3 && brew unlink python3 && brew link --overwrite python3
+
       - name: Install pango
         run: |
           brew install pango
+
       - name: Install wkhtmltopdf
         run: |
           curl -OL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/wkhtmltox-0.12.6-2.macos-cocoa.pkg
           sudo installer -pkg wkhtmltox-0.12.6-2.macos-cocoa.pkg -target /
           sudo rm -rf wkhtmltox-0.12.6-2.macos-cocoa.pkg
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Install dependencies
-        run: |
-          poetry install
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v6
+        with:
+          # Install a specific version of uv.
+          version: "0.8.14"
+
       - name: Run make
         run: |
-          make nextweek
+          uv run scrap.py nextweek
+
       - name: commit docs
         run:
           scripts/commit-docs
