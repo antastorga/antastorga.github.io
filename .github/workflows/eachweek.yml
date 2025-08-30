@@ -42,7 +42,7 @@ jobs:
 
       - name: Run make
         run: |
-          uv run scrap.py nextweek
+          uv run scrap.py next_week
 
       - name: commit docs
         run:
