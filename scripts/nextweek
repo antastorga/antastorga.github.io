@@ -4,9 +4,9 @@ echo "==> Running next_week script"
 
 
 if [[ $# < 1 ]]; then
-    poetry run python scrap.py next_week
+    uv run scrap.py next_week
 else
-    poetry run python scrap.py next_week -d "$1"
+    uv run scrap.py next_week -d "$1"
 fi
 
 

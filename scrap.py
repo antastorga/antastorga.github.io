@@ -17,9 +17,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.chrome.service import Service
-from weasyprint import HTML, CSS
-# from webdriver_manager.chrome import ChromeDriverManager
 
 scrap_timeout_seconds = 60
 main_parser = ArgumentParser()
@@ -214,7 +211,7 @@ def get_current_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
     url = get_url(current_str)
     devotional_dict = scrap_webpage(url, day)
     devotionals.append(devotional_dict)
-    filename = "Devoción del {day} {n} de {month}".format(day=day, n=current.day,  month=month)
+    filename = "Devocional del {day} {n} de {month}".format(day=day, n=current.day,  month=month)
     return devotionals, filename
 
 
@@ -226,7 +223,7 @@ def get_today_devotionals() -> Tuple[List[Dict], str]:
     url = get_url(today_str)
     devotional_dict = scrap_webpage(url, day)
     devotionals.append(devotional_dict)
-    filename = "Devoción del {day} {n} de {month}".format(day=day, n=today.day, month=month)
+    filename = "Devocional del {day} {n} de {month}".format(day=day, n=today.day, month=month)
     return devotionals, filename
 
 
@@ -239,15 +236,15 @@ def get_next_week_sunday_from_current(p_current_str: str):
 
 def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
     days_to_start_capture : int = 0
-    days_to_end_capture : int = 6
+    days_to_end_capture : int = 7
     devotionals : List[Dict] = []
     first_day : str = ""
     first_n : str = ""
     last_day : str = ""
     last_n : str = ""
-    (next_day, _) = get_next_week_sunday_from_current(p_current_str)
+    (next_day, nextday_str) = get_next_week_sunday_from_current(p_current_str)
     for i in range(days_to_start_capture, days_to_end_capture + 1):
-        (next_day, nextday_str) = get_next_day_and_str(next_day)
+        (next_day, nextday_str) = get_next_day_and_str(next_day) if i > 0 else (next_day, nextday_str)
         day = get_weekday_str(next_day)
         first_day = day if i == days_to_start_capture else first_day
         first_n = next_day.day if i == days_to_start_capture else first_n
@@ -268,7 +265,7 @@ def get_next_week_devotionals(p_current_str: str) -> Tuple[List[Dict], str]:
             except Exception as e:
                 print("Failed to get {day} at {url}".format(day=day, url=url), file=sys.stderr)
                 raise e
-    filename = "Devociones del {first_n} al {last_n} de {month}".format(first_n=first_n, last_n=last_n, month=month)
+    filename = "Devocionales del {first_n} al {last_n} de {month}".format(first_n=first_n, last_n=last_n, month=month)
     return devotionals, filename
 
 
@@ -367,7 +364,7 @@ def get_month_devotionals(p_current_str: str) -> List[List[Dict]]:
             try:
                 d1 = devotionals[0]
                 d2 = devotionals[-1]
-                filename = "Devociones del {day1} al {day2} de {month}".format(day1=d1["dayn"], day2=d2["dayn"], month=d1["month"])
+                filename = "Devocionales del {day1} al {day2} de {month}".format(day1=d1["dayn"], day2=d2["dayn"], month=d1["month"])
                 write_and_convert(build_path, filename, devotionals)
             except Exception as e:
                 print("Error obtaining values from {day}")

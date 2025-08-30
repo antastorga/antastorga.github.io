@@ -2,6 +2,6 @@
 
 echo "==> Running convert script"
 
-poetry run python scrap.py convert -f "$*"
+uv run scrap.py convert -f "$*"
 
 exit 0

@@ -2,6 +2,6 @@
 
 echo "==> Running today script"
 
-poetry run python scrap.py today
+uv run scrap.py today
 
 exit 0

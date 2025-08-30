@@ -6,31 +6,36 @@ jobs:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
+
       - name: Configure Git
         run: |
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@bots.github.com"
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
+
       - name: Install brew
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
           brew install pango
+
       - name: Install wkhtmltopdf
         run: |
           curl -OL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-2/wkhtmltox-0.12.6-2.macos-cocoa.pkg
           sudo installer -pkg wkhtmltox-0.12.6-2.macos-cocoa.pkg -target /
           sudo rm -rf wkhtmltox-0.12.6-2.macos-cocoa.pkg
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Install dependencies
-        run: |
-          poetry install
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v6
+        with:
+          # Install a specific version of uv.
+          version: "0.8.14"
+
+      - name: Set up Python
+        run: uv python install
+
       - name: Run make
         run: |
-          poetry run python scrap.py month
+          uv run scrap.py month
+
       - name: commit docs
         run: scripts/commit-docs

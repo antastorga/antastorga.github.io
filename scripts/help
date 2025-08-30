@@ -5,7 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo 
 echo "==> Printing help script for: $1"
 
-poetry run python scrap.py $1 --help
+uv run scrap.py $1 --help
 
 echo 
 
