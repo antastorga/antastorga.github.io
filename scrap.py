@@ -141,6 +141,8 @@ def scrap_webpage(url, day) -> Dict:
         devotional_dict["passage"] = passage
         verse = element.find_element(By.CLASS_NAME, "skipRefTagger")
         verse_text = verse.text
+        if verse.text[0] == 'o':
+            verse_text = verse.text[1:]
         verse_text_quoted = urllib.parse.quote_plus(verse_text.replace(',', ';'))
         verse_link = "https://www.biblegateway.com/passage/?search={verse_text_quoted}&version=RVR1960".format(verse_text_quoted=verse_text_quoted)
         verse_link_unquoted = "https://www.biblegateway.com/passage/?search={verse_text_quoted}&version=RVR1960".format(verse_text_quoted=verse_text)
